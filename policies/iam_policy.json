@@ -1,0 +1,33 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "CloudTrailLookup",
+            "Effect": "Allow",
+            "Action": [
+                "cloudtrail:LookupEvents"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "IAMRemediationActions",
+            "Effect": "Allow",
+            "Action": [
+                "iam:ListAccessKeys",
+                "iam:UpdateAccessKey",
+                "iam:ListAttachedUserPolicies",
+                "iam:DetachUserPolicy",
+                "iam:DeleteUser"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "SNSNotify",
+            "Effect": "Allow",
+            "Action": [
+                "sns:Publish"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
