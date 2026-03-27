@@ -5,19 +5,25 @@ import datetime
 import boto3
 from botocore.exceptions import ClientError
 
-# AWS clients
-iam = boto3.client("iam")
-sns = boto3.client("sns")
-ct = boto3.client("cloudtrail")
-
 # ---- Config ----
 SNS_TOPIC_ARN = os.environ.get("SNS_TOPIC_ARN")
 ADMIN_POLICY_ARN = "arn:aws:iam::aws:policy/AdministratorAccess"
+CLOUDTRAIL_REGION = os.environ.get("CLOUDTRAIL_REGION", "us-east-1")
+
+# Comma-separated usernames to never auto-remediate
+PROTECTED_USERS = {
+    u.strip() for u in os.environ.get("PROTECTED_USERS", "root,admin,administrator").split(",") if u.strip()
+}
 
 # Lookup timing
-LOOKUP_RETRIES = 6
-LOOKUP_SLEEP_SECONDS = 10
+LOOKUP_RETRIES = 3
+LOOKUP_SLEEP_SECONDS = 2
 LOOKUP_WINDOW_MINUTES = 60
+
+# AWS clients
+iam = boto3.client("iam")
+sns = boto3.client("sns")
+ct = boto3.client("cloudtrail", region_name=CLOUDTRAIL_REGION)
 
 
 # ---------- Helpers ----------
@@ -60,6 +66,7 @@ def _lookup_latest(event_name: str, minutes: int = LOOKUP_WINDOW_MINUTES):
         start_time = end_time - datetime.timedelta(minutes=minutes)
 
         try:
+            _log(f"[DEBUG] Looking up {event_name} in CloudTrail region {CLOUDTRAIL_REGION} (attempt {attempt})")
             resp = ct.lookup_events(
                 LookupAttributes=[
                     {"AttributeKey": "EventName", "AttributeValue": event_name}
@@ -74,11 +81,14 @@ def _lookup_latest(event_name: str, minutes: int = LOOKUP_WINDOW_MINUTES):
             continue
 
         events = resp.get("Events", [])
+        _log(f"[DEBUG] lookup_events returned {len(events)} result(s) for {event_name}")
+
         if events:
             latest = sorted(events, key=lambda e: e["EventTime"], reverse=True)[0]
             try:
                 parsed = json.loads(latest["CloudTrailEvent"])
                 _log(f"[INFO] Found {event_name} event on attempt {attempt}")
+                _log(f"[DEBUG] Matched event source: {parsed.get('eventSource')} region: {parsed.get('awsRegion')}")
                 return parsed
             except Exception as e:
                 _log(f"[ERROR] Failed parsing CloudTrailEvent JSON: {e}")
@@ -90,9 +100,19 @@ def _lookup_latest(event_name: str, minutes: int = LOOKUP_WINDOW_MINUTES):
     return None
 
 
+def _is_protected_user(user_name: str) -> bool:
+    if not user_name:
+        return False
+    return user_name in PROTECTED_USERS
+
+
 def _disable_newest_active_key(user_name: str):
     results = []
     try:
+        if _is_protected_user(user_name):
+            results.append(f"Skipped key remediation for protected user {user_name}")
+            return results
+
         keys = iam.list_access_keys(UserName=user_name).get("AccessKeyMetadata", [])
         keys = sorted(keys, key=lambda k: k["CreateDate"], reverse=True)
 
@@ -118,6 +138,10 @@ def _disable_newest_active_key(user_name: str):
 def _detach_admin_policy(user_name: str):
     results = []
     try:
+        if _is_protected_user(user_name):
+            results.append(f"Skipped admin policy detach for protected user {user_name}")
+            return results
+
         policies = iam.list_attached_user_policies(UserName=user_name).get("AttachedPolicies", [])
         detached = False
 
@@ -145,8 +169,10 @@ def _detach_admin_policy(user_name: str):
 def _delete_user(user_name: str):
     results = []
     try:
-        # If user has keys, login profile, policies, etc. delete_user can fail.
-        # This keeps it simple for your lab if it's just a new plain user.
+        if _is_protected_user(user_name):
+            results.append(f"Skipped user deletion for protected user {user_name}")
+            return results
+
         iam.delete_user(UserName=user_name)
         results.append(f"Deleted newly created user {user_name}")
     except Exception as e:
