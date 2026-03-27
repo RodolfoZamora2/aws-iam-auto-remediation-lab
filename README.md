@@ -1,3 +1,7 @@
+Author
+
+Rodolfo Zamora-Fuentes
+
 # AWS IAM Auto Remediation Lab
 
 A hands-on AWS cloud security project focused on detecting and automatically remediating risky IAM activity using CloudTrail, CloudWatch, SNS, Lambda, and IAM.
@@ -105,7 +109,3 @@ aws-iam-auto-remediation-lab/
 │   └── lessons_learned.md
 └── screenshots/
     └── README.md
-
-## Author
-
-**Rodolfo Zamora-Fuentes**
