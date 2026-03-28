@@ -1,13 +1,13 @@
 # Lessons Learned
 
-## What This Lab Taught Me
+## Overview
 
-This project was not just about building detection and remediation logic. A major part of the value came from troubleshooting how AWS services actually interact in a real workflow.
+This project was not just about building detection and remediation logic. A major part of its value came from troubleshooting how AWS services actually interact in a real cloud security workflow.
 
 ## Key Lessons
 
 ### 1. IAM is high risk
-IAM actions are some of the most sensitive operations in AWS. Small changes like creating users, creating access keys, or attaching high-privilege policies can have major security impact.
+IAM actions are some of the most sensitive operations in AWS. Small changes such as creating users, creating access keys, or attaching high-privilege policies can have major security impact.
 
 ### 2. CloudTrail is critical for visibility
 CloudTrail provided the foundation for detecting IAM activity in this lab. Without proper logging and event visibility, suspicious behavior would be difficult to detect and even harder to remediate.
@@ -15,7 +15,7 @@ CloudTrail provided the foundation for detecting IAM activity in this lab. Witho
 ### 3. Detection and remediation are different
 It is possible to have CloudTrail, CloudWatch, SNS, and Lambda all partially working while the actual remediation still fails.
 
-Early on, the project could:
+Early in the project, the workflow could:
 - detect activity
 - trigger alarms
 - send SNS alerts
@@ -39,7 +39,7 @@ This required:
 - improving the Lambda lookup logic
 - explicitly setting `CLOUDTRAIL_REGION`
 
-This was one of the biggest troubleshooting points in the lab.
+This became one of the biggest troubleshooting points in the lab.
 
 ### 7. Region consistency and service alignment matter
 A large part of troubleshooting involved understanding how CloudTrail, CloudWatch, SNS, and Lambda were interacting across the environment.
@@ -52,7 +52,7 @@ This reinforced the importance of:
 ### 8. Lambda retry timing and timeout settings matter
 Earlier versions of the Lambda logic used retry behavior that was too slow relative to the configured timeout.
 
-That caused cases where:
+This caused cases where:
 - Lambda received the alarm
 - Lambda began event lookup
 - Lambda timed out before completing remediation
@@ -60,13 +60,12 @@ That caused cases where:
 Fixes included:
 - reducing lookup retry delay
 - tightening the retry count
-- increasing the Lambda timeout
 - improving log visibility
 
 ### 9. Automated remediation needs safeguards
 Once remediation started working, it became clear that safety controls mattered.
 
-To reduce the chance of damaging important identities, the project was updated with:
+To reduce the chance of impacting important identities, the project was updated with:
 - `PROTECTED_USERS`
 - safer remediation checks
 - clearer logging around what target was being acted on
@@ -98,7 +97,7 @@ A large part of this lab involved:
 This reflected real-world cloud security work more than simply deploying services once.
 
 ### 12. End-to-end validation is critical
-It was not enough to verify only one piece of the pipeline.
+It was not enough to verify only one part of the pipeline.
 
 A full successful test required confirming:
 - the IAM action occurred
@@ -111,7 +110,7 @@ A full successful test required confirming:
 
 That full-chain validation is what turned the lab into a strong portfolio project.
 
-## Final Outcome
+## Final Results
 
 By the end of the lab, all three core scenarios were working:
 
