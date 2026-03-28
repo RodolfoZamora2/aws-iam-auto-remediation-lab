@@ -1,6 +1,4 @@
-Author
-
-Rodolfo Zamora-Fuentes
+**Author:** Rodolfo Zamora-Fuentes
 
 # AWS IAM Auto Remediation Lab
 
@@ -108,4 +106,7 @@ aws-iam-auto-remediation-lab/
 │   ├── architecture.md
 │   └── lessons_learned.md
 └── screenshots/
+    ├── 01-create-user-alert/
+    ├── 02-create-access-key-alert/
+    ├── 03-admin-policy-alert/
     └── README.md
