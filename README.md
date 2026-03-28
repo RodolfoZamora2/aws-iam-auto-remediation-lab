@@ -110,3 +110,17 @@ aws-iam-auto-remediation-lab/
     ├── 02-create-access-key-alert/
     ├── 03-admin-policy-alert/
     └── README.md
+
+## Proof of Remediation
+
+### CreateUserAlert
+Evidence is stored in:
+- `screenshots/01-create-user-alert/`
+
+### CreateAccessKeyAlert
+Evidence is stored in:
+- `screenshots/02-create-access-key-alert/`
+
+### AdminPolicyAlert
+Evidence is stored in:
+- `screenshots/03-admin-policy-alert/`
