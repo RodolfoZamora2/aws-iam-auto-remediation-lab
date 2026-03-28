@@ -10,6 +10,7 @@ screenshots/
 ├── 02-create-access-key-alert/
 ├── 03-admin-policy-alert/
 └── README.md
+```
 1. CreateUserAlert
 
 Path:
