@@ -13,7 +13,7 @@ IAM action occurs
 → Lambda performs IAM remediation
 → Lambda publishes a result notification to SNS topic (SecurityAlerts-Email)
 → Outlook email receives the remediation result
-
+```
 ## Services and Roles
 
 ### AWS IAM
